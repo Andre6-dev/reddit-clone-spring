@@ -1,5 +1,6 @@
 package com.blogapp.redditclonespring.services;
 
+import com.blogapp.redditclonespring.dto.LoginRequest;
 import com.blogapp.redditclonespring.dto.RegisterRequest;
 import com.blogapp.redditclonespring.exceptions.SpringRedditException;
 import com.blogapp.redditclonespring.models.NotificationEmail;
@@ -8,6 +9,8 @@ import com.blogapp.redditclonespring.models.VerificationToken;
 import com.blogapp.redditclonespring.repositories.UserRepository;
 import com.blogapp.redditclonespring.repositories.VerificationTokenRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,8 @@ public class AuthService {
     private final VerificationTokenRepository verificationTokenRepository;
 
     private final MailService mailService;
+
+    private final AuthenticationManager authenticationManager;
 
     /*Una transacción de base de datos es un conjunto de instrucciones que se ejecutan en bloque*/
     @Transactional
@@ -70,5 +75,9 @@ public class AuthService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringRedditException("User not found with username: " + username));
         user.setEnabled(true);
         userRepository.save(user);
+    }
+
+    public void login(LoginRequest loginRequest) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
     }
 }
